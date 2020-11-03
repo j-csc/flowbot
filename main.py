@@ -6,6 +6,8 @@ import json
 import time
 import traceback
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+import os
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -17,6 +19,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 
 # Init -------------------------------------------------------
+load_dotenv()
 url = "https://flowalgo.com"
 hideChrome = True
 
@@ -29,11 +32,11 @@ console = ""
 driver = None
 client = None
 clientReady = False
-flowUser = "lalalander"
-flowPw = "flowalgo2020"
+flowUser = os.environ.get("FLOWUSERNAME")
+flowPw = os.environ.get("FLOWPASSWORD")
 
 # TOKEN = 'NzYwNDM3NTU5MTAwMTc4NDcy.X3MCqg.h1qky3bcccGoiUkbXIZ9RgQdjdY'
-TOKEN = "NzcyMTk0MDMwNjI4MzcyNDgx.X53Huw.o7kun9cjscwxFCbr_6HfrdZeFVQ"
+TOKEN = os.environ.get("TOKEN")
 # -----------------------------------------------------------------------------
 
 client = commands.Bot(command_prefix='.')
