@@ -34,13 +34,44 @@ client = None
 clientReady = False
 flowUser = os.environ.get("FLOWUSERNAME")
 flowPw = os.environ.get("FLOWPASSWORD")
-
+all_flow = []
+flow_check = set()
+update_count = 0
+channel_id = 772196146180259880
 # TOKEN = 'NzYwNDM3NTU5MTAwMTc4NDcy.X3MCqg.h1qky3bcccGoiUkbXIZ9RgQdjdY'
 TOKEN = os.environ.get("TOKEN")
 # -----------------------------------------------------------------------------
 
 client = commands.Bot(command_prefix='.')
 
+class Flow:
+  def __init__(self, ticker, sentiment, det, expiry, strike, cp, order_type):
+    self.ticker = ticker
+    self.sentiment = sentiment
+    self.det = det
+    self.expiry = expiry
+    self.strike = strike
+    self.cp = cp
+    self.order_type = order_type
+    
+  def __str__(self):
+    return (f"{self.order_type}\n{self.ticker} {self.strike} {self.cp}\n{self.det}\n")
+
+  def key(self):
+    return (f"{self.order_type}{self.ticker}{self.strike}{self.cp}{self.det}{self.expiry}")
+  
+  def obj(self):
+    dic = {
+      'ticker': self.ticker,
+      'strike': self.strike,
+      'cp': self.cp,
+      'details': self.det,
+      'order_type': self.order_type, 
+      'expiry': self.expiry, 
+      'sentiment': self.sentiment
+    }
+    return dic
+  
 def chromeSetup():
 	global driver, dataDirectory, hideChrome
 	# Set up Chrome options
@@ -67,7 +98,7 @@ async def refreshThread():
 		await asyncio.sleep(refreshTime)		# Wait between page fetches
 
 async def fetchPage():
-  global console, alreadyFetched, refreshTime, loadTime, flowPw, flowUser
+  global console, alreadyFetched, refreshTime, loadTime, flowPw, flowUser, all_flow, flow_check, update_count
   
   # If not logged in
   if (not alreadyFetched):
@@ -91,21 +122,47 @@ async def fetchPage():
   # Fetch flow
   try:
     flowCheck = WebDriverWait(driver, loadTime).until(EC.presence_of_element_located((By.CLASS_NAME, 'option-flow')))
+    past_len = len(all_flow)
+    num_added = 0
     # Brute force fetch html
     html = driver.page_source
     soup = BeautifulSoup(html,"html.parser")
-    with open("output1.html", "w") as file:
-      file.write(html)
-    # for div in (soup.find("div", class_= "data-body")):
-    #   print(div.text)
-    pass
+    # with open("output1.html", "w") as file:
+    #   file.write(html)
+    option_flows = (soup.find_all('div',  attrs={'class': ['option-flow']}))
+    for flow in option_flows:
+      ticker = flow['data-ticker']
+      sentiment = flow['data-sentiment']
+      order_type = flow['data-ordertype']
+      cp = ("CALLS" if flow['data-sentiment'] == "bullish" else "PUTS")
+      strike = str(flow.find('div', class_="strike").text)
+      strike = strike[6:]
+      expiry = str(flow.find('div', class_="expiry").text)
+      expiry = expiry[6:]
+      det =  str(flow.find('div', class_="details").text)
+      det = (det[21:])
+      
+      temp_obj = Flow(ticker, sentiment, det, expiry, strike, cp, order_type)
+      obj_check = temp_obj.key()
+        
+      if obj_check not in flow_check:
+        flow_check.add(obj_check)
+        all_flow.append(temp_obj.obj())
+        num_added += 1
+    
+    # No change at this point if initializing or no change, else add
+    if past_len == 0:
+      pass
+    elif num_added == 0:
+      pass
+    else:
+      await showFlow(num_added)
   except TimeoutException:
     print("Page timeout")
   except AttributeError:
     traceback.print_exc()
   except NoSuchElementException:
     print("Elements not found, or page has not loaded properly")
-  
   pass
 
 def run(client):
@@ -114,6 +171,7 @@ def run(client):
   @client.event
   async def on_ready():
     global clientReady
+    clientReady = True
     activity = discord.Activity(name='wolftradingllc.com', type=discord.ActivityType.watching)
     await client.change_presence(activity=activity)
     print(f'{client.user} has connected to Discord!')
@@ -125,46 +183,58 @@ def run(client):
     
     if message.content.startswith("Block"):
       await message.channel.send("Start")
-      
-    # if message.content.startswith("!flow"):
-    #   embed = discord.Embed(title='Guh Calls', description='$333 Calls 10-9 Expiration', colour=discord.Colour.red())
-    #   embed.set_footer(text='Powered By Guh')
-    #   await message.channel.send(message.channel, embed=embed)
     
     if message.content.startswith('.'):
       await client.process_commands(message)
 
   @client.command(pass_context=True)
-  async def ping(ctx):
-    await ctx.send(f'Pong! {round(client.latency * 1000)}ms')
-
-  @client.command(pass_context=True)
-  async def bitcoin(ctx):
-    url = 'https://api.coindesk.com/v1/bpi/currentprice/BTC.json'
-    async with aiohttp.ClientSession() as session:  # Async HTTP request
-        raw_response = await session.get(url)
-        response = await raw_response.text()
-        response = json.loads(response)
-        await ctx.send("Bitcoin price is: $" + response['bpi']['USD']['rate'])
-
-  @client.command(pass_context=True)
   async def flow(ctx):
-    pass
+    global channel_id
+    channel = client.get_channel(channel_id)
+    for flow in all_flow[:5]:
+      ticker = flow['ticker']
+      cp = flow['cp']
+      details = flow['details']
+      strike = flow['strike']
+      
+      exp = flow['expiry']
+      order_type = flow['order_type']
+      embed = discord.Embed(title=f'{order_type} {cp}', description=f'{details} {ticker} ${strike} {cp} {exp} Expiry', colour=discord.Colour.red())
+      embed.set_footer(text='Powered By Guh')
+      await channel.send(channel, embed=embed)
   
   client.run(TOKEN)
+  
+async def showFlow(added_flow_n):
+  global client, clientReady, all_flow, channel_id
+
+  if (clientReady):
+    channel = client.get_channel(channel_id)
+    print("New flow incoming...")
+    for flow in all_flow[-added_flow_n:]:
+      ticker = flow['ticker']
+      cp = flow['cp']
+      details = flow['details']
+      strike = flow['strike']
+      exp = flow['expiry']
+      embed = discord.Embed(title=f'{ticker} {cp}', description=f'{details} ${strike} Calls {exp}', colour=discord.Colour.red())
+      embed.set_footer(text='Powered By Guh')
+      await channel.send(channel, embed=embed)
 
 def main():
   global client
+
   # Set up chrome
   chromeSetup()
   
   # Set up async fetch
   loop = asyncio.get_event_loop()
   loop.create_task(refreshThread())
- 
+  
   # Set up Discord
   client = commands.Bot(command_prefix=".")
   run(client)
+  
 
 if __name__ == "__main__":
   main()
