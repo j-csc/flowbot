@@ -37,15 +37,16 @@ flowPw = os.environ.get("FLOWPASSWORD")
 all_flow = []
 flow_check = set()
 update_count = 0
-channel_id = 772196146180259880
-# TOKEN = 'NzYwNDM3NTU5MTAwMTc4NDcy.X3MCqg.h1qky3bcccGoiUkbXIZ9RgQdjdY'
+reg_channel_id = 766201963045191691
+golden_channel_id = 766202220445696010
+unusual_channel_id = 773630528560955483
 TOKEN = os.environ.get("TOKEN")
 # -----------------------------------------------------------------------------
 
 client = commands.Bot(command_prefix='.')
 
 class Flow:
-  def __init__(self, ticker, sentiment, det, expiry, strike, cp, order_type):
+  def __init__(self, ticker, sentiment, det, expiry, strike, cp, order_type, prem, gsweep, sizelot, unusual):
     self.ticker = ticker
     self.sentiment = sentiment
     self.det = det
@@ -53,12 +54,13 @@ class Flow:
     self.strike = strike
     self.cp = cp
     self.order_type = order_type
-    
-  def __str__(self):
-    return (f"{self.order_type}\n{self.ticker} {self.strike} {self.cp}\n{self.det}\n")
-
+    self.prem = prem
+    self.gsweep = gsweep
+    self.sizelot = sizelot
+    self.unusual = unusual
+  
   def key(self):
-    return (f"{self.order_type}{self.ticker}{self.strike}{self.cp}{self.det}{self.expiry}")
+    return (f"{self.order_type}{self.ticker}{self.strike}{self.cp}{self.det}{self.expiry}{self.prem}")
   
   def obj(self):
     dic = {
@@ -68,7 +70,11 @@ class Flow:
       'details': self.det,
       'order_type': self.order_type, 
       'expiry': self.expiry, 
-      'sentiment': self.sentiment
+      'sentiment': self.sentiment,
+      'premium': self.prem,
+      'gsweep': self.gsweep,
+      'sizelot': self.sizelot,
+      'unusual': self.unusual
     }
     return dic
   
@@ -76,7 +82,7 @@ def chromeSetup():
 	global driver, dataDirectory, hideChrome
 	# Set up Chrome options
 	chrome_opts = Options()
-	# chrome_opts.set_headless(headless=hideChrome)								# Set up headless
+	chrome_opts.set_headless(headless=hideChrome)								# Set up headless
 	chrome_opts.add_argument('no-sandbox')										# --
 	chrome_opts.add_argument("proxy-server=direct://")							# Make headless not unbearably slow
 	chrome_opts.add_argument("proxy-bypass-list=*")								# --
@@ -141,8 +147,12 @@ async def fetchPage():
       expiry = expiry[6:]
       det =  str(flow.find('div', class_="details").text)
       det = (det[21:])
+      prem =  str(flow.find('div', class_="premium").text)
+      gsweep = flow['data-agsweep']
+      sizelot = flow['data-sizelot']
+      unusual = flow['data-unusual']
       
-      temp_obj = Flow(ticker, sentiment, det, expiry, strike, cp, order_type)
+      temp_obj = Flow(ticker, sentiment, det, expiry, strike, cp, order_type, prem, gsweep, sizelot, unusual)
       obj_check = temp_obj.key()
         
       if obj_check not in flow_check:
@@ -187,39 +197,113 @@ def run(client):
     if message.content.startswith('.'):
       await client.process_commands(message)
 
+
   @client.command(pass_context=True)
   async def flow(ctx):
-    global channel_id
-    channel = client.get_channel(channel_id)
+    global reg_channel_id
+    channel = client.get_channel(reg_channel_id)
     for flow in all_flow[:5]:
       ticker = flow['ticker']
       cp = flow['cp']
       details = flow['details']
       strike = flow['strike']
-      
+      prem = flow['premium']
       exp = flow['expiry']
       order_type = flow['order_type']
-      embed = discord.Embed(title=f'{order_type} {cp}', description=f'{details} {ticker} ${strike} {cp} {exp} Expiry', colour=discord.Colour.red())
-      embed.set_footer(text='Powered By Guh')
+      gsweep = flow['gsweep']
+      sizelot = flow['sizelot']
+      unusual = flow['unusual']
+      color = discord.Colour.gold() if gsweep != "" else discord.Colour.purple() if unusual != "" else discord.Colour.green() if sizelot != "" else discord.Colour.red()
+      embed = discord.Embed(title=f'{order_type}: {ticker} {cp}', 
+        description=f'Expiry\n{exp}\nStrike\n${strike}\nContract\n{cp}\nSize @ Price\n{details}\nPremium\n{prem}', colour=color)
+      embed.set_footer(text='Powered By Wolf Trading LLC')
       await channel.send(channel, embed=embed)
   
+  @client.command(pass_context=True)
+  async def golden(ctx):
+    global reg_channel_id
+    channel = client.get_channel(reg_channel_id)
+    for flow in all_flow:
+      gsweep = flow['gsweep']
+      if gsweep != "":
+        ticker = flow['ticker']
+        cp = flow['cp']
+        details = flow['details']
+        strike = flow['strike']
+        prem = flow['premium']
+        exp = flow['expiry']
+        order_type = flow['order_type']
+        sizelot = flow['sizelot']
+        unusual = flow['unusual']
+        gsweep = flow['gsweep']
+        color = discord.Colour.gold() if gsweep != "" else discord.Colour.purple() if unusual != "" else discord.Colour.green() if sizelot != "" else discord.Colour.red()
+        embed = discord.Embed(title=f'{order_type}: {ticker} {cp}', 
+          description=f'Expiry\n{exp}\nStrike\n${strike}\nContract\n{cp}\nSize @ Price\n{details}\nPremium\n{prem}', colour=color)
+        embed.set_footer(text='Powered By Wolf Trading LLC')
+        await channel.send(channel, embed=embed)
+        
+  @client.command(pass_context=True)
+  async def unusual(ctx):
+    global reg_channel_id
+    channel = client.get_channel(reg_channel_id)
+    for flow in all_flow:
+      unusual = flow['unusual']
+      if unusual != "":
+        ticker = flow['ticker']
+        cp = flow['cp']
+        details = flow['details']
+        strike = flow['strike']
+        prem = flow['premium']
+        exp = flow['expiry']
+        order_type = flow['order_type']
+        sizelot = flow['sizelot']
+        unusual = flow['unusual']
+        gsweep = flow['gsweep']
+        color = discord.Colour.gold() if gsweep != "" else discord.Colour.purple() if unusual != "" else discord.Colour.green() if sizelot != "" else discord.Colour.red()
+        embed = discord.Embed(title=f'{order_type}: {ticker} {cp}', 
+          description=f'Expiry\n{exp}\nStrike\n${strike}\nContract\n{cp}\nSize @ Price\n{details}\nPremium\n{prem}', colour=color)
+        embed.set_footer(text='Powered By Wolf Trading LLC')
+        await channel.send(channel, embed=embed)
   client.run(TOKEN)
   
 async def showFlow(added_flow_n):
-  global client, clientReady, all_flow, channel_id
+  global client, clientReady, all_flow, reg_channel_id
 
   if (clientReady):
-    channel = client.get_channel(channel_id)
     print("New flow incoming...")
     for flow in all_flow[-added_flow_n:]:
       ticker = flow['ticker']
       cp = flow['cp']
       details = flow['details']
       strike = flow['strike']
+      prem = flow['premium']
       exp = flow['expiry']
-      embed = discord.Embed(title=f'{ticker} {cp}', description=f'{details} ${strike} Calls {exp}', colour=discord.Colour.red())
-      embed.set_footer(text='Powered By Guh')
-      await channel.send(channel, embed=embed)
+      order_type = flow['order_type']
+      gsweep = flow['gsweep']
+      sizelot = flow['sizelot']
+      unusual = flow['unusual']
+      if gsweep != "":
+        embed = discord.Embed(title=f'{order_type}: {ticker} {cp}', 
+        description=f'Expiry\n{exp}\nStrike\n${strike}\nContract\n{cp}\nSize @ Price\n{details}\nPremium\n{prem}', colour=discord.Colour.gold())
+        embed.set_footer(text='Powered By Wolf Trading LLC')
+        channel = client.get_channel(golden_channel_id)
+        await channel.send(channel, embed=embed)
+      elif unusual != "":
+        embed = discord.Embed(title=f'{order_type}: {ticker} {cp}', 
+        description=f'Expiry\n{exp}\nStrike\n${strike}\nContract\n{cp}\nSize @ Price\n{details}\nPremium\n{prem}', colour=discord.Colour.purple())
+        embed.set_footer(text='Powered By Wolf Trading LLC')
+        channel = client.get_channel(unusual_channel_id)
+        await channel.send(channel, embed=embed)
+      else:
+        if cp == "CALLS":
+          color = discord.Colour.green()
+        else: 
+          color = discord.Colour.red()
+        channel = client.get_channel(reg_channel_id)
+        embed = discord.Embed(title=f'{order_type}: {ticker} {cp}', 
+          description=f'Expiry\n{exp}\nStrike\n${strike}\nContract\n{cp}\nSize @ Price\n{details}\nPremium\n{prem}', colour=color)
+        embed.set_footer(text='Powered By Wolf Trading LLC')
+        await channel.send(channel, embed=embed)
 
 def main():
   global client
