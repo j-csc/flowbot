@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import os
 
 from selenium import webdriver
+import undetected_chromedriver as uc
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -91,10 +92,10 @@ def chromeSetup():
 	chrome_opts.add_argument("window-size=1920,1080")
 	chrome_opts.add_argument("--disable-dev-shm-usage")
 	chrome_opts.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36")
-	chrome_opts.add_argument("--headless")
+	# chrome_opts.add_argument("--headless")
 
   # driver = webdriver.Chrome("./chromedriver_linux"ChromeDriverManager().install(),options=chrome_opts)
-	driver = webdriver.Chrome(os.environ.get("CHROMEDRIVER_PATH"),options=chrome_opts)
+	driver = uc.Chrome(options=chrome_opts)
 
 	print("Web driver set up")
 	driver.get("http://google.com/")
@@ -113,10 +114,10 @@ async def fetchPage():
   if (not alreadyFetched):
     driver.get("https://app.flowalgo.com/")
     print("fetching page")
-    _form = WebDriverWait(driver, loadTime).until(EC.presence_of_element_located((By.XPATH, '//form[@name="login"]')))
-    # _form = driver.find_elements_by_xpath('//form[@name="login"]')
-    _inputs = WebDriverWait(driver, loadTime).until(EC.presence_of_element_located((By.XPATH, '//form[@name="login"]//input')))
-    # _inputs = driver.find_elements_by_xpath('//form[@name="login"]//input')
+    # _form = WebDriverWait(driver, loadTime).until(EC.presence_of_element_located((By.XPATH, '//form[@name="login"]')))
+    _form = driver.find_elements_by_xpath('//form[@name="login"]')
+    # _inputs = WebDriverWait(driver, loadTime).until(EC.presence_of_element_located((By.XPATH, '//form[@name="login"]//input')))
+    _inputs = driver.find_elements_by_xpath('//form[@name="login"]//input')
     for input in _inputs:
       n = (input.get_attribute('name'))
       if n == "amember_login":

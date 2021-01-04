@@ -1,7 +1,8 @@
 discord.py==1.5.1
+undetected_chromedriver==1.5.2
 aiohttp==3.6.3
-webdriver_manager==3.2.2
 selenium==3.141.0
+webdriver_manager==3.2.2
 beautifulsoup4==4.9.3
 discord==1.0.1
 python-dotenv==0.15.0
