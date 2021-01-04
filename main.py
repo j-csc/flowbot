@@ -92,8 +92,9 @@ def chromeSetup():
 	chrome_opts.add_argument("log-level=3")										# Hide console messages
 
 	print("Setting up web driver...")
-	# driver = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_opts)
- 	driver = webdriver.Chrome("./chromedriver_linux",options=chrome_opts)
+  # driver = webdriver.Chrome("./chromedriver_linux"ChromeDriverManager().install(),options=chrome_opts)
+	driver = webdriver.Chrome("./chromedriver_linux",options=chrome_opts)
+  
 
 	print("Web driver set up")
 	driver.get("http://google.com/")
