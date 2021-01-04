@@ -85,7 +85,7 @@ def chromeSetup():
 	chrome_opts = webdriver.ChromeOptions()
 	chrome_opts.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
 	chrome_opts.set_headless(headless=hideChrome)
-	# chrome_opts.add_argument('--no-sandbox')
+	chrome_opts.add_argument('--no-sandbox')
 	chrome_opts.add_argument("proxy-server=direct://")
  	# chrome_opts.add_argument("--headless")
 	chrome_opts.add_argument("proxy-bypass-list=*")		
