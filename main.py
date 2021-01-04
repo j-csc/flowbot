@@ -81,16 +81,17 @@ class Flow:
 def chromeSetup():
 	global driver, dataDirectory, hideChrome
 	# Set up Chrome options
-	chrome_opts = Options()
+	chrome_opts = webdriver.ChromeOptions()
+	chrome_opts.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
 	chrome_opts.set_headless(headless=hideChrome)								# Set up headless
-	chrome_opts.add_argument('no-sandbox')										# --
+	chrome_opts.add_argument('--no-sandbox')# --
 	chrome_opts.add_argument("proxy-server=direct://")							# Make headless not unbearably slow
+ 	chrome_opts.add_argument("--headless")										# Hide console messages
 	chrome_opts.add_argument("proxy-bypass-list=*")								# --
 	chrome_opts.add_argument("disable-extensions")								# --
-	chrome_opts.add_argument("hide-scrollbars")									# --
+	chrome_opts.add_argument("--disable-dev-shm-usage")									# --
 	chrome_opts.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36")
 	chrome_opts.add_argument("log-level=3")										# Hide console messages
-	chrome_opts.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
 
   # driver = webdriver.Chrome("./chromedriver_linux"ChromeDriverManager().install(),options=chrome_opts)
 	driver = webdriver.Chrome(os.environ.get("CHROMEDRIVER_PATH"),options=chrome_opts)
