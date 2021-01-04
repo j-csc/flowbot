@@ -113,7 +113,7 @@ async def fetchPage():
   # If not logged in
   if (not alreadyFetched):
     driver.get("https://app.flowalgo.com/")
-    time.sleep(10)
+    WebDriverWait(driver, 10)
     print("fetching page")
     # _form = WebDriverWait(driver, loadTime).until(EC.presence_of_element_located((By.XPATH, '//form[@name="login"]')))
     _form = driver.find_elements_by_xpath('//form[@name="login"]')
