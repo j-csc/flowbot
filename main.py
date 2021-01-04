@@ -98,7 +98,7 @@ def chromeSetup():
 	driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"),options=chrome_opts)
 
 	print("Web driver set up")
-	driver.get("http://google.com/")
+	# driver.get("http://google.com/")
 
 async def refreshThread():
 	global refreshTime
