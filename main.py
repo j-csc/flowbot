@@ -126,6 +126,8 @@ async def fetchPage():
       elif n == "amember_pass":
         input.send_keys(flowPw)
         pass
+    print(_form)
+    print(_form.text)
     _form[0].submit()
     alreadyFetched = True
   else:
