@@ -37,9 +37,9 @@ flowPw = os.environ.get("FLOWPASSWORD")
 all_flow = []
 flow_check = set()
 update_count = 0
-reg_channel_id = 766201963045191691
-golden_channel_id = 766202220445696010
-unusual_channel_id = 773630528560955483
+reg_channel_id = 795486318012268564
+golden_channel_id = 795486634907926529
+unusual_channel_id = 795486772050133053
 TOKEN = os.environ.get("TOKEN")
 # -----------------------------------------------------------------------------
 
@@ -244,8 +244,8 @@ def run(client):
         
   @client.command(pass_context=True)
   async def unusual(ctx):
-    global reg_channel_id
-    channel = client.get_channel(reg_channel_id)
+    global unusual_channel_id
+    channel = client.get_channel(unusual_channel_id)
     for flow in all_flow:
       unusual = flow['unusual']
       if unusual != "":
