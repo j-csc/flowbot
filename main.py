@@ -94,8 +94,8 @@ def chromeSetup():
 	chrome_opts.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36")
 	chrome_opts.add_argument("--disable-blink-features=AutomationControlled")
 
-  # driver = webdriver.Chrome("./chromedriver_linux"ChromeDriverManager().install(),options=chrome_opts)
-	driver = uc.Chrome(options=chrome_opts)
+  # driver = webdriver.Chrome("./chromedriver_linux"ChromeDriverManager().install(),options=chrome_opts) driver=uc.Chrome(options=chrome_opts)
+	driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"),options=chrome_opts)
 
 	print("Web driver set up")
 	driver.get("http://google.com/")
