@@ -4,6 +4,7 @@
 
 To run app: ```python main.py```
 
+<<<<<<< HEAD
 
 # Example
 
