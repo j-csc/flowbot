@@ -83,19 +83,19 @@ def chromeSetup():
 	global driver, dataDirectory, hideChrome
 	# Set up Chrome options
 	chrome_opts = webdriver.ChromeOptions()
-	chrome_opts.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+	# chrome_opts.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
 	chrome_opts.set_headless(headless=hideChrome)
 	chrome_opts.add_argument('--no-sandbox')
 	chrome_opts.add_argument("proxy-server=direct://")
  	# chrome_opts.add_argument("--headless")
 	chrome_opts.add_argument("proxy-bypass-list=*")		
-	chrome_opts.add_argument("window-size=1400,920")
+	chrome_opts.add_argument("--headless")
 	chrome_opts.add_argument("--disable-dev-shm-usage")
 	chrome_opts.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36")
 	chrome_opts.add_argument("--disable-blink-features=AutomationControlled")
  
 
-	driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"),options=chrome_opts)
+	driver = uc.Chrome(options=chrome_opts)
 
 	print("Web driver set up")
 	# driver.get("http://google.com/")
