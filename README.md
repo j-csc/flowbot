@@ -6,4 +6,4 @@ To run app: ```python main.py```
 
 # Example
 
-![Use case](https://imgur.com/a/OZq5Q4W)
+![Use_case](https://imgur.com/a/OZq5Q4W)
