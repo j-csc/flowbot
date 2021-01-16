@@ -4,8 +4,6 @@
 
 To run app: ```python main.py```
 
-<<<<<<< HEAD
-
 # Example
 
 ![img](./flow.png)
